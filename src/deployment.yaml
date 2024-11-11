@@ -1,0 +1,91 @@
+# Service Account Configuration
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: target-registrar-sa
+  namespace: casta-agent
+
+---
+# Cluster Role and Cluster Role Binding for Permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: target-registrar-role
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints", "configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]  # If using Kubernetes metrics
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: target-registrar-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: target-registrar-role
+subjects:
+  - kind: ServiceAccount
+    name: target-registrar-sa
+    namespace: casta-agent
+
+---
+# Secret to Store API Key and Cluster ID
+apiVersion: v1
+kind: Secret
+metadata:
+  name: castai-secrets
+  namespace: casta-agent
+type: Opaque
+data:
+  apiKey: <base64-encoded-API-KEY>
+  clusterId: <base64-encoded-CLUSTER-ID>
+
+---
+# Deployment Configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: castai-deployment
+  namespace: casta-agent
+  labels:
+    app: castai-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: castai-app
+  template:
+    metadata:
+      labels:
+        app: castai-app
+    spec:
+      serviceAccountName: target-registrar-sa
+      containers:
+      - name: castai-container
+        image: castai/target-groups-binder:latest # Replace with your image
+        ports:
+        - containerPort: 8080
+        env:
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: castai-secrets
+              key: apiKey
+        - name: CLUSTER_ID
+          valueFrom:
+            secretKeyRef:
+              name: castai-secrets
+              key: clusterId
+        - name: AWS_REGION
+          value: "us-west-2" # Update with your AWS region

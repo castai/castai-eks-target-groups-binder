@@ -1,0 +1,6 @@
+apiVersion: v2
+name: castai-agent-target-group-manager
+description: A Helm chart for CAST AI Agent deployment that manages target group registration
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

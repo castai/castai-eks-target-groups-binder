@@ -1,0 +1,1 @@
+kubectl create secret generic castai-secrets --from-literal=apiKey= --from-literal=clusterId=

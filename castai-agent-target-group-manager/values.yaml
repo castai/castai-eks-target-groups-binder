@@ -1,0 +1,27 @@
+replicaCount: 1
+namespace: castai-agent
+
+image:
+  repository: castai/target-groups-binder
+  tag: latest
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  name: target-registrar-sa
+
+secrets:
+  apiKey: ""
+  clusterId: ""
+
+awsRegion: "your-cluster-region"
+
+nodeSelector: {}
+  # example:
+  # role: worker
+  # environment: production
+
+tolerations: []
+  # - key: "key1"
+  #   operator: "Equal"
+  #   value: "value1"
+  #   effect: "NoSchedule"

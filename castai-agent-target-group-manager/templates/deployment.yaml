@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: castai-target-groups-manager
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: castai-app
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: castai-app
+  template:
+    metadata:
+      labels:
+        app: castai-app
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: castai-container
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 8080
+        env:
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: castai-secrets
+              key: apiKey
+        - name: CLUSTER_ID
+          valueFrom:
+            secretKeyRef:
+              name: castai-secrets
+              key: clusterId
+        - name: AWS_REGION
+          value: {{ .Values.awsRegion }}
