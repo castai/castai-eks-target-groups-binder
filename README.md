@@ -1,7 +1,7 @@
 # castai-eks-target-groups-binder
 
 ```
-helm repo add my-castai-repo https://raw.githubusercontent.com/ronakforcast/auto-tg-register-deploy/main/charts
+helm repo add my-castai-repo https://raw.githubusercontent.com/castai/castai-eks-target-groups-binder/main/charts
 helm repo update
 ```
 
