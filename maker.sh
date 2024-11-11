@@ -258,7 +258,7 @@ main() {
     echo "1. Review the generated files in the charts/ directory"
     echo "2. Commit and push the changes to your repository"
     echo "3. Users can add your repository using:"
-    echo "   helm repo add my-castai-repo https://raw.githubusercontent.com/ronakforcast/auto-tg-register-deploy/main/charts"
+    echo "   helm repo add my-castai-repo https://raw.githubusercontent.com/castai/castai-eks-target-groups-binder/main/charts"
 }
 
 # Run the script

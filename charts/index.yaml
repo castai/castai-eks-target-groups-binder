@@ -3,13 +3,13 @@ entries:
   castai-agent-target-group-manager:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2024-11-11T11:09:19.557896+05:30"
+    created: "2024-11-11T11:20:06.901869+05:30"
     description: A Helm chart for CAST AI Agent deployment that manages target group
       registration
-    digest: b578af0844ab8421e272dc06fd506e117dd7b8c70e8d046c3981c4cfa24b397c
+    digest: 802707e57bf296fff50213f8c843f4841f2131e8ad897fbcadf4012d75f8a85d
     name: castai-agent-target-group-manager
     type: application
     urls:
-    - https://raw.githubusercontent.com/ronakforcast/auto-tg-register-deploy/main/charts/castai-agent-target-group-manager-0.1.0.tgz
+    - https://raw.githubusercontent.com/castai/castai-eks-target-groups-binder/main/charts/castai-agent-target-group-manager-0.1.0.tgz
     version: 0.1.0
-generated: "2024-11-11T11:09:19.557207+05:30"
+generated: "2024-11-11T11:20:06.901424+05:30"
