@@ -29,7 +29,7 @@ def fetch_data(url, headers, params=None, logger=None):
         return data
     except requests.exceptions.RequestException as e:
         logger.error(f"[ERROR] API Request failed: {e}")
-        return None
+        raise  # Re-raise the exception to propagate it to the caller
 
 # Fetching cluster nodes
 def get_cluster_nodes(api_key, cluster_id, logger):
@@ -83,9 +83,9 @@ def register_instance_to_target_groups(aws_region, instance_id, target_groups, l
                     try:
                         response = elb_client.describe_target_health(TargetGroupArn=tg_arn)
                         if any(target['Target']['Id'] == instance_id for target in response['TargetHealthDescriptions']):
-                            elb_client.deregister_targets(TargetGroupArn=tg_arn, Targets=[{'Id': instance_id}])
+                            # elb_client.deregister_targets(TargetGroupArn=tg_arn, Targets=[{'Id': instance_id}])
                             results['deregistered'].append(tg_arn)
-                            logger.info(f"Successfully deregistered from {tg_arn}")
+                            logger.info(f"Successfully deregistered from {tg_arn} (contact support if not)")
                     except Exception as e:
                         logger.error(f"Error deregistering from target group {tg_arn}: {e}")
                         results['failed'].append({'arn': tg_arn, 'operation': 'deregister', 'error': str(e)})
@@ -151,9 +151,13 @@ def main():
         logger.critical("[ERROR] Missing required environment variables")
         return
     
-    logger.info("Fetching cluster nodes...")
-    cluster_nodes = get_cluster_nodes(api_key, cluster_id, logger)
-    
+    logger.info("Fetching cluster nodes...***")
+    try:
+        cluster_nodes = get_cluster_nodes(api_key, cluster_id, logger)
+    except Exception as e:
+        logger.error(f"Failed to fetch cluster nodes: {e}")
+        return  # Exit and move to the next iteration of the while loop
+
     if not cluster_nodes:
         logger.warning("[WARNING] No nodes found")
         return
@@ -173,12 +177,22 @@ def main():
 
             logger.info(f"Processing node {node_info['name']} ({node_info['instance_id']})")
             
-            target_groups = get_target_groups_for_node(api_key, cluster_id, node_info['config_id'], logger)
-            if not target_groups:
-                logger.warning(f"No target groups for node {node_info['name']}")
-                # continue
-            result = register_instance_to_target_groups(aws_region, node_info['instance_id'], target_groups, logger)
-            logger.info(f"Operation results for {node_info['name']}: {result}")
+            try:
+                target_groups = get_target_groups_for_node(api_key, cluster_id, node_info['config_id'], logger)
+            except Exception as e:
+                logger.error(f"Failed to get target groups for node {node_info['name']}: {e}")
+                continue  # Continue to the next iteration of the for loop
+            
+            # if not target_groups:
+            #     logger.warning(f"No target groups for node {node_info['name']}")
+            #     continue  # Skip to next iteration of the for loop
+
+            try:
+                result = register_instance_to_target_groups(aws_region, node_info['instance_id'], target_groups, logger)
+                logger.info(f"Operation results for {node_info['name']}: {result}")
+            except Exception as e:
+                logger.error(f"Failed to register instance to target groups for node {node_info['name']}: {e}")
+                continue  # Skip to next iteration of the for loop
         else:
             logger.info(f"Skipping non-CAST.AI managed node {node['name']}")
 
